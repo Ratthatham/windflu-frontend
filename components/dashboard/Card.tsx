@@ -17,9 +17,9 @@ export function Card({
   trend,
 }: CardProps) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-zinc-200/60 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:shadow-zinc-200/50 active:scale-[0.99]">
+    <div className="group relative overflow-hidden rounded-3xl border border-zinc-200/60 bg-white p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-zinc-200/40 active:scale-[0.99] border-b-4 border-b-transparent hover:border-b-brand-purple">
       <div className="flex items-center justify-between">
-        <div className="rounded-xl bg-zinc-50 p-2 text-zinc-600 transition-colors group-hover:bg-zinc-900 group-hover:text-white">
+        <div className="rounded-xl bg-zinc-100 p-2.5 text-zinc-500 transition-all duration-300 group-hover:bg-brand-purple group-hover:text-white group-hover:shadow-lg group-hover:shadow-brand-purple/30 group-hover:-translate-y-0.5">
           <Icon className="h-5 w-5" />
         </div>
         {trend && (

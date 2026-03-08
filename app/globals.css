@@ -1,35 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: oklch(100% 0 0);
-  --color-foreground: oklch(14.5% 0 0);
+  --font-family-sarabun: var(--font-sarabun), var(--font-inter), sans-serif;
 
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(14.5% 0 0);
+  --color-brand-yellow: #ffd93d;
+  --color-brand-orange: #ff8c42;
+  --color-brand-pink: #ff6b9d;
+  --color-brand-purple: #8b5cf6;
+  --color-brand-blue: #4f7ec9;
+  --color-brand-cyan: #22d3ee;
 
-  --color-popover: oklch(100% 0 0);
-  --color-popover-foreground: oklch(14.5% 0 0);
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-border-base: #ede8f5;
+  --color-text-base: #1a1230;
+  --color-text-muted: #6b5f8a;
+  --color-danger-base: #e11d48;
 
-  --color-primary: oklch(21% 0.006 285.8);
-  --color-primary-foreground: oklch(98.5% 0 0);
+  --background-image-gradient-main: linear-gradient(
+    135deg,
+    #ffd93d,
+    #ff6b9d,
+    #8b5cf6,
+    #22d3ee
+  );
+  --background-image-gradient-cta: linear-gradient(
+    135deg,
+    #8b5cf6,
+    #4f7ec9,
+    #22d3ee
+  );
 
-  --color-secondary: oklch(96.7% 0.001 286.4);
-  --color-secondary-foreground: oklch(21% 0.006 285.8);
-
-  --color-muted: oklch(96.7% 0.001 286.4);
-  --color-muted-foreground: oklch(55.2% 0.016 285.9);
-
-  --color-accent: oklch(96.7% 0.001 286.4);
-  --color-accent-foreground: oklch(21% 0.006 285.8);
-
-  --color-destructive: oklch(62.8% 0.258 25.6);
-  --color-destructive-foreground: oklch(98.5% 0 0);
-
-  --color-border: oklch(92% 0.004 286.3);
-  --color-input: oklch(92% 0.004 286.3);
-  --color-ring: oklch(14.5% 0 0);
-
-  --radius-lg: 0.75rem;
+  /* Shadcn-like tokens integrated with base44 system */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-base);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-text-base);
+  --color-popover: var(--color-surface);
+  --color-popover-foreground: var(--color-text-base);
+  --color-primary: var(--color-brand-purple);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-brand-blue);
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: var(--color-text-muted);
+  --color-accent: #f3f4f6;
+  --color-accent-foreground: var(--color-text-base);
+  --color-destructive: var(--color-danger-base);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--color-border-base);
+  --color-input: var(--color-border-base);
+  --color-ring: var(--color-brand-purple);
+  --radius-base: 0.75rem;
 }
 
 @layer base {
@@ -40,36 +62,107 @@
   ::file-selector-button {
     border-color: var(--color-border);
   }
+
+  body {
+    font-family: var(--font-family-sarabun);
+    font-size: 15px;
+    line-height: 1.75;
+    background-color: var(--color-bg);
+    color: var(--color-text-base);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-text-base);
+  }
+
+  p,
+  span,
+  label,
+  input,
+  textarea,
+  select,
+  button {
+    font-weight: 400;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
 }
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  font-feature-settings:
-    "rlig" 1,
-    "calt" 1;
+/* Custom Utilities */
+@layer utilities {
+  .gradient-noise {
+    position: relative;
+  }
+  .gradient-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .btn-cta {
+    background-image: var(--background-image-gradient-cta);
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition:
+      opacity 0.2s,
+      transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-cta:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+  .btn-cta:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background-color: #ffffff;
+    border: 1.5px solid var(--color-brand-purple);
+    color: var(--color-brand-purple);
+    font-weight: 600;
+    border-radius: 50px;
+    min-height: 44px;
+    padding: 0 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-secondary:hover {
+    background-color: #f5f0ff;
+  }
 }
 
-/* Custom Scrollbar for Premium Feel */
+/* Custom Scrollbar for Webkit */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-zinc-200);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-zinc-300);
-}
-
-.glass-morphism {
-  background-color: color-mix(in oklch, white 70%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in oklch, white 20%, transparent);
+  background: var(--color-border);
+  border-radius: 3px;
 }

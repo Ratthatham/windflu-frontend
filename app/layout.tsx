@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import { ToastProvider, ToastViewport } from "@/components/ui/Toast";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-inter",
+});
+
+const sarabun = Sarabun({
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sarabun",
+});
 
 export const metadata: Metadata = {
-  title: "Premium SaaS Boilerplate",
+  title: "Windflow - พลังแห่งการจัดการไวรัลคอนเทนต์",
   description: "Next.js + Supabase + Radix UI",
 };
 
@@ -18,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} min-h-screen bg-zinc-50/50 antialiased`}
+        className={`${inter.variable} ${sarabun.variable} ${sarabun.className} min-h-screen bg-zinc-50/50 antialiased`}
       >
         <ToastProvider>
           {children}

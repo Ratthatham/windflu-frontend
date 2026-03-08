@@ -26,10 +26,10 @@ export function Sidebar() {
   return (
     <aside className="w-72 border-r border-zinc-200/60 bg-white/50 backdrop-blur-xl p-6 md:block hidden h-screen sticky top-0">
       <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="h-9 w-9 rounded-xl bg-zinc-900 flex items-center justify-center shadow-lg shadow-zinc-200">
+        <div className="h-10 w-10 rounded-2xl bg-brand-purple flex items-center justify-center shadow-lg shadow-brand-purple/30">
           <Package className="h-5 w-5 text-white" />
         </div>
-        <span className="text-xl font-bold tracking-tight text-zinc-900">
+        <span className="text-xl font-extrabold tracking-tight text-zinc-900">
           NexaSaaS
         </span>
       </div>
@@ -43,8 +43,8 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-zinc-900 text-white shadow-md shadow-zinc-200"
-                  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900",
+                  ? "bg-brand-purple text-white shadow-lg shadow-brand-purple/20"
+                  : "text-zinc-500 hover:bg-brand-purple/5 hover:text-brand-purple",
               )}
             >
               <div className="flex items-center">
@@ -65,14 +65,14 @@ export function Sidebar() {
       </nav>
 
       <div className="absolute bottom-8 left-6 right-6">
-        <div className="rounded-2xl bg-zinc-900 p-4 shadow-xl">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        <div className="rounded-[24px] bg-(--background-image-gradient-cta) p-5 shadow-xl shadow-brand-blue/20">
+          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
             Pro Plan
           </p>
-          <p className="mt-1 text-sm font-medium text-white">
-            Upgrade for more features
+          <p className="mt-1 text-sm font-bold text-white">
+            Unlock all premium features
           </p>
-          <button className="mt-3 w-full rounded-lg bg-white py-2 text-xs font-bold text-zinc-900 hover:bg-zinc-100 transition-colors">
+          <button className="mt-4 w-full rounded-xl bg-white py-2.5 text-xs font-extrabold text-brand-purple hover:bg-white/90 transition-all active:scale-[0.98]">
             Upgrade Now
           </button>
         </div>

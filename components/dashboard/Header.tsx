@@ -20,7 +20,7 @@ export function Header({ user }: { user: User }) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
           <Input
             placeholder="Search anything..."
-            className="pl-10 h-9 bg-zinc-50 border-none focus-visible:ring-zinc-200 rounded-lg w-full"
+            className="pl-10 h-10 bg-zinc-100/50 border-none focus-visible:ring-brand-purple/30 rounded-xl w-full"
           />
         </div>
       </div>
@@ -33,15 +33,15 @@ export function Header({ user }: { user: User }) {
         >
           <Bell className="h-5 w-5" />
         </Button>
-        <div className="h-6 w-[1px] bg-zinc-200 mx-1" />
+        <div className="h-6 w-px bg-zinc-200 mx-1" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               className="relative flex items-center gap-3 px-2 hover:bg-zinc-100/50 rounded-xl"
             >
-              <div className="h-8 w-8 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-200 shadow-sm">
-                <span className="text-xs font-semibold text-white">
+              <div className="h-9 w-9 rounded-full bg-brand-purple flex items-center justify-center border-2 border-white shadow-md">
+                <span className="text-xs font-bold text-white">
                   {user.email?.[0].toUpperCase()}
                 </span>
               </div>
@@ -49,7 +49,9 @@ export function Header({ user }: { user: User }) {
                 <p className="text-xs font-semibold text-zinc-900 truncate max-w-[120px]">
                   {user.email?.split("@")[0]}
                 </p>
-                <p className="text-[10px] text-zinc-500">Pro Member</p>
+                <p className="text-[10px] text-brand-purple font-bold">
+                  Pro Member
+                </p>
               </div>
             </Button>
           </DropdownMenuTrigger>
