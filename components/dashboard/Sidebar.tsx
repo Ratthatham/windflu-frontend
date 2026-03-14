@@ -7,33 +7,63 @@ import {
   BarChart3,
   Package,
   ChevronRight,
+  Wind,
+  LogOut,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const navigation = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Customers", href: "/dashboard/users", icon: Users },
-  { name: "Products", href: "/dashboard/products", icon: Package },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+const roleNavigation: Record<
+  string,
+  { name: string; href: string; icon: any }[]
+> = {
+  creator: [
+    { name: "ภาพรวม", href: "/creator/dashboard", icon: LayoutDashboard },
+    { name: "แคมเปญ", href: "/creator/campaigns", icon: BarChart3 },
+    { name: "งานของฉัน", href: "/creator/my-work", icon: Package },
+  ],
+  brand: [
+    { name: "ภาพรวม", href: "/brand/dashboard", icon: LayoutDashboard },
+    { name: "แคมเปญ", href: "/brand/campaigns", icon: BarChart3 },
+    { name: "สร้างแคมเปญ", href: "/brand/create-campaign", icon: Plus },
+  ],
+  admin: [
+    { name: "ภาพรวม", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "ผู้ดูแล", href: "/admin/manage", icon: Users },
+  ],
+};
 
-export function Sidebar() {
+import { useAuthStore } from "@/lib/store/auth-store";
+
+export default function Sidebar({ className }: { className?: string }) {
+  const { user } = useAuthStore();
   const pathname = usePathname();
+  const role = user?.role || "creator";
+  const navigation = roleNavigation[role] || roleNavigation.creator;
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/set-token", { method: "DELETE" });
+    window.location.href = "/";
+  };
 
   return (
-    <aside className="w-72 border-r border-zinc-200/60 bg-white/50 backdrop-blur-xl p-6 md:block hidden h-screen sticky top-0">
-      <div className="mb-10 flex items-center gap-3 px-2">
-        <div className="h-10 w-10 rounded-2xl bg-brand-purple flex items-center justify-center shadow-lg shadow-brand-purple/30">
-          <Package className="h-5 w-5 text-white" />
+    <aside
+      className={cn(
+        "bg-white h-screen sticky top-0 flex flex-col transition-all duration-300 border-r border-slate-100 px-6 py-8",
+        className,
+      )}
+    >
+      <div className="mb-10 flex items-center gap-3 px-1">
+        <div className="h-10 w-10 rounded-2xl bg-white shadow-xl shadow-black/5 flex items-center justify-center">
+          <Wind className="h-5 w-5 text-brand-purple" />
         </div>
-        <span className="text-xl font-extrabold tracking-tight text-zinc-900">
-          NexaSaaS
+        <span className="text-xl font-black tracking-tight text-slate-900">
+          Windflu
         </span>
       </div>
-      <nav className="space-y-1.5">
+      <nav className="space-y-2 flex-1">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -41,41 +71,58 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                "group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300",
                 isActive
-                  ? "bg-brand-purple text-white shadow-lg shadow-brand-purple/20"
-                  : "text-zinc-500 hover:bg-brand-purple/5 hover:text-brand-purple",
+                  ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20 scale-[1.02]"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
               )}
             >
               <div className="flex items-center">
                 <item.icon
                   className={cn(
-                    "mr-3 h-5 w-5",
+                    "mr-3 h-5 w-5 transition-colors",
                     isActive
                       ? "text-white"
-                      : "text-zinc-400 group-hover:text-zinc-900",
+                      : "text-slate-400 group-hover:text-slate-900",
                   )}
                 />
                 {item.name}
               </div>
-              {isActive && <ChevronRight className="h-4 w-4 opacity-50" />}
+              {isActive && <ChevronRight className="h-4 w-4 opacity-70" />}
             </Link>
           );
         })}
       </nav>
 
-      <div className="absolute bottom-8 left-6 right-6">
-        <div className="rounded-[24px] bg-(--background-image-gradient-cta) p-5 shadow-xl shadow-brand-blue/20">
-          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
-            Pro Plan
-          </p>
-          <p className="mt-1 text-sm font-bold text-white">
-            Unlock all premium features
-          </p>
-          <button className="mt-4 w-full rounded-xl bg-white py-2.5 text-xs font-extrabold text-brand-purple hover:bg-white/90 transition-all active:scale-[0.98]">
-            Upgrade Now
-          </button>
-        </div>
+      <div className="border-t border-slate-100 mt-auto pt-6">
+        {user && (
+          <div className="flex items-center gap-3 mb-4 px-1">
+            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-black text-slate-900">
+                {(user.full_name || user.email || "U")[0].toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-slate-900 truncate">
+                {user.full_name || user.display_name || user.company_name || user.email || "Anonymous"}
+              </p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                {user.role === "admin"
+                  ? "แอดมิน"
+                  : user.role === "brand"
+                    ? "แบรนด์"
+                    : "Clipper"}
+              </p>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 py-3 rounded-2xl transition-all border border-slate-200 active:scale-95 px-4"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>ออกก่อนนะ</span>
+        </button>
       </div>
     </aside>
   );

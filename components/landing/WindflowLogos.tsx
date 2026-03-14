@@ -15,7 +15,7 @@ const WindflowLogos = () => {
   return (
     <section className="py-12 border-y border-[#ede8f5] overflow-hidden bg-white">
       <p className="text-center text-xs text-[#6b5f8a] font-semibold uppercase tracking-widest mb-8">
-        แบรนด์ที่ไว้วางใจ Windflow
+        แบรนด์ที่ไว้วางใจ Windflu
       </p>
       <div className="flex gap-12 animate-[scroll_20s_linear_infinite] whitespace-nowrap">
         {[...brands, ...brands].map((b, i) => (

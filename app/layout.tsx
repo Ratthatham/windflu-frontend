@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import { ToastProvider, ToastViewport } from "@/components/ui/Toast";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,9 +17,11 @@ const sarabun = Sarabun({
 });
 
 export const metadata: Metadata = {
-  title: "Windflow - พลังแห่งการจัดการไวรัลคอนเทนต์",
-  description: "Next.js + Supabase + Radix UI",
+  title: "Windflu - พลังแห่งการจัดการไวรัลคอนเทนต์",
+  description: "Windflu แพลตฟอร์มการตลาดคลิปสั้น",
 };
+
+import QueryProvider from "@/components/QueryProvider";
 
 export default function RootLayout({
   children,
@@ -30,11 +33,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${sarabun.variable} ${sarabun.className} min-h-screen bg-zinc-50/50 antialiased`}
       >
-        <ToastProvider>
-          {children}
-          <ToastViewport />
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            {children}
+            <ToastViewport />
+          </ToastProvider>
+        </QueryProvider>
+        <Script src="https://cdn.omise.co/omise.js" strategy="beforeInteractive" />
       </body>
     </html>
   );
 }
+

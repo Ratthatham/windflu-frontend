@@ -1,85 +1,62 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+// Routes that require the user to be logged in
+const PROTECTED_ROUTES = ["/creator", "/brand", "/admin", "/dashboard"];
 
-  // Bypass Supabase authentication for now
-  let user = null;
+// Routes that logged-in users should NOT access
+const AUTH_ROUTES = [
+  "/login",
+  "/register",
+  "/admin/login",
+  "/admin/register",
+  "/brand/login",
+  "/brand/register",
+];
 
-  try {
-    if (
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return request.cookies.getAll();
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value }) =>
-                request.cookies.set(name, value),
-              );
-              response = NextResponse.next({
-                request: {
-                  headers: request.headers,
-                },
-              });
-              cookiesToSet.forEach(({ name, value, options }) =>
-                response.cookies.set(name, value, options),
-              );
-            },
-          },
-        },
-      );
-      const { data } = await supabase.auth.getUser();
-      user = data.user;
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get("access_token")?.value;
+  const isAuthenticated = Boolean(token);
+
+  const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+  const isProtectedRoute = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
+  const role = request.cookies.get("user_role")?.value;
+
+  // 0. Redirect /dashboard to role-specific dashboard
+  if (isAuthenticated && pathname === "/dashboard") {
+    if (role === "admin")
+      return NextResponse.redirect(new URL("/admin/manage", request.url));
+    if (role === "brand")
+      return NextResponse.redirect(new URL("/brand/create-campaign", request.url));
+    return NextResponse.redirect(new URL("/creator/campaigns", request.url));
+  }
+
+  // 1. If it's an auth route (login/register)
+  if (isAuthRoute) {
+    if (isAuthenticated) {
+      // Logged in users shouldn't see login pages
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-  } catch (err) {
-    console.error("Supabase middleware error (bypassing):", err);
+    // Allow unauthenticated users through to login
+    return NextResponse.next();
   }
 
-  const url = request.nextUrl.clone();
-  const isDev = process.env.NODE_ENV === "development";
+  // 2. Protect role-based and dashboard routes
+  if (isProtectedRoute && !isAuthenticated) {
+    let loginRoute = "/login";
+    if (pathname.startsWith("/admin")) loginRoute = "/admin/login";
+    else if (pathname.startsWith("/brand")) loginRoute = "/brand/login";
 
-  // Handle root path (/)
-  if (url.pathname === "/") {
-    // In bypass mode, we treat everyone as authorized to see the landing page
-    return NextResponse.rewrite(new URL("/", request.url));
+    const loginUrl = new URL(loginRoute, request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // Protect /dashboard routes (still redirect to login if no user, in case they want to test this)
-  if (url.pathname.startsWith("/dashboard") && !user) {
-    // For now, if someone wants to bypass this too, they can, but let's keep it
-    // somewhat functional.
-    // return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Redirect authenticated users from /login and /register to /dashboard
-  if ((url.pathname === "/login" || url.pathname === "/register") && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/auth/set-token|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

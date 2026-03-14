@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { Wind, ChevronRight } from "lucide-react";
+import WindflowHowItWorks from "./WindflowHowItWorks";
 
 interface WindflowHeroProps {
   onBookCall: () => void;
@@ -28,7 +29,7 @@ const WindflowHero = ({ onBookCall, onGetStarted }: WindflowHeroProps) => {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-tight text-white">
-            ยอดวิวที่คุณ
+            เปลี่ยนยอดวิวธรรมดา
             <br />
             <span
               style={{
@@ -36,7 +37,7 @@ const WindflowHero = ({ onBookCall, onGetStarted }: WindflowHeroProps) => {
                 textShadow: "0 2px 20px rgba(0,0,0,0.15)",
               }}
             >
-              จ่ายตามผลจริง
+              เป็นรายได้จริง
             </span>
           </h1>
 
@@ -44,28 +45,34 @@ const WindflowHero = ({ onBookCall, onGetStarted }: WindflowHeroProps) => {
             className="text-lg max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: "rgba(255,255,255,0.85)" }}
           >
-            เชื่อมแบรนด์กับ Clipper มืออาชีพ ระบบตรวจ Draft ก่อนโพสต์
-            คำนวณรายได้โปร่งใสตาม CPM
+            เชื่อมแบรนด์กับ Clipper มืออาชีพ กับ Windflu
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-            <button
+            {/* <button
               onClick={onBookCall}
               className="w-full sm:w-auto bg-white font-black text-base px-8 py-4 rounded-[50px] hover:bg-white/90 transition-all shadow-xl"
               style={{ color: "#8B5CF6", minHeight: 44 }}
             >
               นัดคุยฟรี สำหรับแบรนด์
-            </button>
+            </button> */}
             <button
+              onClick={onGetStarted}
+              className="w-full sm:w-auto bg-white font-black text-base px-8 py-4 rounded-[50px] hover:bg-white/90 transition-all shadow-xl"
+              style={{ color: "#8B5CF6", minHeight: 44 }}
+            >
+              สมัครเป็น Clipper
+            </button>
+            {/* <button
               onClick={onGetStarted}
               className="w-full sm:w-auto flex items-center justify-center gap-2 border-2 border-white/60 text-white font-bold text-base px-8 py-4 rounded-[50px] hover:bg-white/10 transition-all backdrop-blur-sm"
               style={{ minHeight: 44 }}
             >
               สมัครเป็น Clipper <ChevronRight className="w-4 h-4" />
-            </button>
+            </button> */}
           </div>
 
-          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
+          {/* <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
             {[
               { value: "2.4B+", label: "ยอดวิวรวมทั้งหมด" },
               { value: "3,200+", label: "Clipper ที่ใช้งานอยู่" },
@@ -89,7 +96,8 @@ const WindflowHero = ({ onBookCall, onGetStarted }: WindflowHeroProps) => {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </div> */}
+          <WindflowHowItWorks />
         </motion.div>
       </div>
     </section>

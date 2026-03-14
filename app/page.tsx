@@ -5,6 +5,7 @@ import WindflowLogos from "@/components/landing/WindflowLogos";
 import WindflowHowItWorks from "@/components/landing/WindflowHowItWorks";
 import WindflowCaseStudies from "@/components/landing/WindflowCaseStudies";
 import WindflowBookForm from "@/components/landing/WindflowBookForm";
+import WindflowFooter from "@/components/landing/WindflowFooter";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -53,21 +54,32 @@ const HomePage = () => {
                   : {}
               }
             >
-              Windflow
+              Windflu
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={scrollToBooking}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/brand/login"
               className={`text-sm transition-colors duration-300 hidden sm:block font-medium ${
                 scrolled
                   ? "text-[#6b5f8a] hover:text-[#1a1230]"
                   : "text-white/80 hover:text-white"
               }`}
             >
-              คุยกับแบรนด์
-            </button>
-            <Link href={"Onboarding"}>
+              สำหรับแบรนด์
+            </Link>
+            <Link href={"/login"}>
+              <button
+                className={`text-sm px-4 py-2.5 rounded-full font-bold transition-all duration-300 border ${
+                  scrolled
+                    ? "border-[#ede8f5] text-[#6b5f8a] hover:border-[#8B5CF6] hover:text-[#8B5CF6]"
+                    : "border-white/40 text-white hover:bg-white/10"
+                }`}
+              >
+                เข้าสู่ระบบ
+              </button>
+            </Link>
+            <Link href={"/register"}>
               <button
                 className={`text-sm px-5 py-2.5 rounded-full font-bold transition-all duration-300 ${
                   scrolled
@@ -84,33 +96,13 @@ const HomePage = () => {
 
       <WindflowHero
         onBookCall={scrollToBooking}
-        onGetStarted={() => (window.location.href = "Onboarding")}
+        onGetStarted={() => (window.location.href = "register")}
       />
-      <WindflowLogos />
-      <WindflowHowItWorks />
-      <WindflowCaseStudies />
+      {/* <WindflowLogos /> */}
+      {/* <WindflowCaseStudies /> */}
       <WindflowBookForm />
 
-      <footer className="border-t border-[#ede8f5] py-10 px-6 bg-white">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Wind className="w-5 h-5" style={{ color: "#8B5CF6" }} />
-            <span
-              className="font-black tracking-tight"
-              style={{
-                background: "linear-gradient(135deg,#8B5CF6,#22D3EE)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Windflow
-            </span>
-          </div>
-          <p className="text-sm text-[#6b5f8a]">
-            Windflow 2569 — ทำโดยคนไทย เพื่อคนไทยโดยเฉพาะ
-          </p>
-        </div>
-      </footer>
+      <WindflowFooter />
     </div>
   );
 };
