@@ -10,6 +10,8 @@ import {
   Wind,
   LogOut,
   Plus,
+  Shield,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,11 +29,14 @@ const roleNavigation: Record<
   brand: [
     { name: "ภาพรวม", href: "/brand/dashboard", icon: LayoutDashboard },
     { name: "แคมเปญ", href: "/brand/campaigns", icon: BarChart3 },
+    // { name: "รีวิวงาน", href: "/brand/review", icon: Package },
     { name: "สร้างแคมเปญ", href: "/brand/create-campaign", icon: Plus },
   ],
   admin: [
     { name: "ภาพรวม", href: "/admin/dashboard", icon: LayoutDashboard },
-    { name: "ผู้ดูแล", href: "/admin/manage", icon: Users },
+    { name: "แผงผู้ดูแล", href: "/admin", icon: Shield },
+    { name: "แคมเปญ", href: "/admin/campaigns", icon: BarChart3 },
+    { name: "ตรวจ KYC", href: "/admin/kyc", icon: CheckCircle2 },
   ],
 };
 
@@ -97,14 +102,18 @@ export default function Sidebar({ className }: { className?: string }) {
       <div className="border-t border-slate-100 mt-auto pt-6">
         {user && (
           <div className="flex items-center gap-3 mb-4 px-1">
-            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
               <span className="text-sm font-black text-slate-900">
                 {(user.full_name || user.email || "U")[0].toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-black text-slate-900 truncate">
-                {user.full_name || user.display_name || user.company_name || user.email || "Anonymous"}
+                {user.full_name ||
+                  user.display_name ||
+                  user.company_name ||
+                  user.email ||
+                  "Anonymous"}
               </p>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
                 {user.role === "admin"
