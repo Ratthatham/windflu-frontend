@@ -1,42 +1,21 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { Header } from "@/components/dashboard/Header";
+import Sidebar from "@/components/dashboard/Sidebar";
+import MobileNav from "@/components/dashboard/MobileNav";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let user = null;
-
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-  } catch (e) {
-    console.warn("Supabase client failed to initialize:", e);
-  }
-
-  // Provide a mock user for local development if not authenticated
-  const effectiveUser =
-    user ||
-    ({
-      id: "demo-id",
-      email: "demo@example.com",
-      user_metadata: { full_name: "Demo User" },
-      app_metadata: {},
-      aud: "authenticated",
-      created_at: new Date().toISOString(),
-    } as any);
-
   return (
-    <div className="flex min-h-screen bg-zinc-50/50">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
-        <Header user={effectiveUser} />
-        <main className="flex-1 p-8 md:p-10">{children}</main>
+    <AuthProvider>
+      <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 relative items-stretch">
+        <MobileNav />
+        <Sidebar className="hidden md:flex shrink-0 w-72 sticky top-0 h-screen border-r border-slate-200" />
+        <div className="flex flex-1 flex-col relative z-10 overflow-hidden">
+          <main className="flex-1 p-4 md:p-10 overflow-y-auto">{children}</main>
+        </div>
       </div>
-    </div>
+    </AuthProvider>
   );
 }

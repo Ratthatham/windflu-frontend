@@ -10,94 +10,106 @@ interface WindflowHeroProps {
 
 const WindflowHero = ({ onBookCall, onGetStarted }: WindflowHeroProps) => {
   return (
-    <section
-      className="relative pt-32 pb-20 px-6 overflow-hidden gradient-noise"
-      style={{
-        background:
-          "linear-gradient(135deg, #FFD93D, #FF8C42, #FF6B9D, #8B5CF6, #22D3EE)",
-      }}
-    >
-      <div className="max-w-7xl mx-auto relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-1.5 text-sm text-white font-semibold mb-8">
-            <Wind className="w-4 h-4" />
-            แพลตฟอร์มการตลาดคลิปสั้นอันดับหนึ่งในไทย
-          </div>
+    <section className="relative pt-40 pb-20 px-6 overflow-hidden bg-white">
+      {/* Subtle background glow elements (Apple-esque depth with IG colors) */}
+      <motion.div
+        animate={{
+          scale: [1, 1.05, 1],
+          opacity: [0.08, 0.12, 0.08],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-brand-pink rounded-full blur-[120px] pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.05, 0.1, 0.05],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          ease: "linear",
+          delay: 2,
+        }}
+        className="absolute bottom-1/4 -right-20 w-[700px] h-[700px] bg-brand-yellow rounded-full blur-[140px] pointer-events-none"
+      />
 
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-tight text-white">
+      <div className="max-w-7xl mx-auto relative z-10 text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                staggerChildren: 0.12,
+                duration: 0.8,
+                ease: [0.22, 1, 0.36, 1],
+              },
+            },
+          }}
+        >
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-sm font-medium mb-12"
+          >
+            <Wind className="w-4 h-4 text-brand-pink" />
+            <span className="tracking-tight">
+              แพลตฟอร์มการตลาดคลิปสั้นอันดับหนึ่งในไทย
+            </span>
+          </motion.div>
+
+          <motion.h1
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="text-6xl md:text-[88px] font-extrabold tracking-tight mb-8 leading-[1.05] text-[#1d1d1f]"
+          >
             เปลี่ยนยอดวิวธรรมดา
             <br />
-            <span
-              style={{
-                color: "rgba(255,255,255,0.9)",
-                textShadow: "0 2px 20px rgba(0,0,0,0.15)",
-              }}
-            >
-              เป็นรายได้จริง
-            </span>
-          </h1>
+            <span className="text-gradient-brand">เป็นรายได้จริง</span>
+          </motion.h1>
 
-          <p
-            className="text-lg max-w-2xl mx-auto mb-10 leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.85)" }}
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="text-xl md:text-2xl text-[#86868b] max-w-2xl mx-auto mb-12 leading-relaxed tracking-tight"
           >
-            เชื่อมแบรนด์กับ Clipper มืออาชีพ กับ Windflu
-          </p>
+            เชื่อมแบรนด์กับ Clipper
+            มืออาชีพผ่านระบบที่ช่วยเพิ่มรายได้ให้คุณแบบอัตโนมัติ
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
-            {/* <button
-              onClick={onBookCall}
-              className="w-full sm:w-auto bg-white font-black text-base px-8 py-4 rounded-[50px] hover:bg-white/90 transition-all shadow-xl"
-              style={{ color: "#8B5CF6", minHeight: 44 }}
-            >
-              นัดคุยฟรี สำหรับแบรนด์
-            </button> */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24"
+          >
             <button
               onClick={onGetStarted}
-              className="w-full sm:w-auto bg-white font-black text-base px-8 py-4 rounded-[50px] hover:bg-white/90 transition-all shadow-xl"
-              style={{ color: "#8B5CF6", minHeight: 44 }}
+              className="btn-cta bg-[#1d1d1f] hover:bg-[#000000] text-lg px-10 py-4"
             >
               สมัครเป็น Clipper
             </button>
-            {/* <button
-              onClick={onGetStarted}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 border-2 border-white/60 text-white font-bold text-base px-8 py-4 rounded-[50px] hover:bg-white/10 transition-all backdrop-blur-sm"
-              style={{ minHeight: 44 }}
-            >
-              สมัครเป็น Clipper <ChevronRight className="w-4 h-4" />
-            </button> */}
-          </div>
-
-          {/* <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
-            {[
-              { value: "2.4B+", label: "ยอดวิวรวมทั้งหมด" },
-              { value: "3,200+", label: "Clipper ที่ใช้งานอยู่" },
-              { value: "฿8–80", label: "CPM ต่อ 1,000 วิว" },
-            ].map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-                className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-5"
-              >
-                <div className="text-3xl font-black text-white mb-1">
-                  {s.value}
-                </div>
-                <div
-                  className="text-sm"
-                  style={{ color: "rgba(255,255,255,0.8)" }}
-                >
-                  {s.label}
-                </div>
-              </motion.div>
-            ))}
-          </div> */}
-          <WindflowHowItWorks />
+            <button onClick={onBookCall} className="btn-secondary group">
+              สำหรับแบรนด์ที่ต้องการเติบโต
+              <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
+          </motion.div>
         </motion.div>
       </div>
     </section>

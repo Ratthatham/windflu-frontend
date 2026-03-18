@@ -12,7 +12,13 @@ import {
   Calendar,
   Loader2,
   AlertTriangle,
-  Image as ImageIcon,
+  ImageIcon,
+  RotateCcw,
+  Instagram,
+  Youtube,
+  Music2,
+  Mail,
+  Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -27,32 +33,24 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-interface KYCRequest {
-  id: string;
-  creator_id: string;
-  status: string;
-  selfie_with_id_url: string;
-  id_card_image_url: string;
-  comment?: string;
-  last_submitted_at?: string;
-  reviewed_at?: string;
-  reviewed_by?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { KYCRequest, KYCListResponse } from "@/type/kyc";
+import { reviewSchema, ReviewFormValues } from "@/lib/validations/kyc";
 
-interface KYCListResponse {
-  items: KYCRequest[];
-  limit: number;
-  offset: number;
-  total: number;
-}
-
-const reviewSchema = z.object({
-  comment: z.string().min(1, "กรุณาระบุเหตุผลที่ปฏิเสธ"),
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  ColumnDef,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
+import { CreatorBackendProfile } from "@/type/profile";
 
 export default function KYCReviewPage() {
   const queryClient = useQueryClient();
@@ -68,13 +66,31 @@ export default function KYCReviewPage() {
     },
   });
 
+  // Fetch creator profile when a KYC is selected for the modal
+  const { data: creatorProfile, isLoading: isLoadingProfile } =
+    useQuery<CreatorBackendProfile>({
+      queryKey: ["admin-creator-profile", selectedKYC?.creator_id],
+      queryFn: async () => {
+        if (!selectedKYC?.creator_id) return null;
+        return await api({
+          url: `/v1/admin/creators/${selectedKYC.creator_id}`,
+        });
+      },
+      enabled: !!selectedKYC,
+    });
+
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
+    defaultValues: {
+      status: "approved",
+      comment: "",
+    },
   });
 
   const reviewMutation = useMutation({
@@ -84,20 +100,25 @@ export default function KYCReviewPage() {
       comment,
     }: {
       id: string;
-      status: "approved" | "rejected";
+      status: "approved" | "rejected" | "revise";
       comment?: string;
     }) => {
       return await api({
         url: `/v1/admin/kyc/${id}/status`,
         method: "PATCH",
-        body: { status, comment },
+        body: {
+          status,
+          ...(status === "revise" || status === "rejected" ? { comment } : {}),
+        },
       });
     },
     onSuccess: (_, variables) => {
       toast.success(
         variables.status === "approved"
           ? "อนุมัติ KYC แล้ว"
-          : "ปฏิเสธ KYC แล้ว",
+          : variables.status === "revise"
+            ? "ส่งรายการให้แก้ไขแล้ว"
+            : "ระงับ/Ban บัญชีแล้ว",
       );
       setSelectedKYC(null);
       reset();
@@ -112,6 +133,7 @@ export default function KYCReviewPage() {
   const pendingRequests = kycRequests.filter((k) => k.status === "pending");
   const approvedRequests = kycRequests.filter((k) => k.status === "approved");
   const rejectedRequests = kycRequests.filter((k) => k.status === "rejected");
+  const reviseRequests = kycRequests.filter((k) => k.status === "revise");
 
   const stats = [
     { icon: Clock, value: pendingRequests.length, label: "รอตรวจสอบ" },
@@ -120,9 +142,92 @@ export default function KYCReviewPage() {
       value: approvedRequests.length,
       label: "อนุมัติแล้ว",
     },
-    { icon: XCircle, value: rejectedRequests.length, label: "ปฏิเสธแล้ว" },
+    { icon: XCircle, value: rejectedRequests.length, label: "โดนBanแล้ว" },
+    { icon: RotateCcw, value: reviseRequests.length, label: "ให้ส่งใหม่" },
     { icon: Shield, value: kycRequests.length, label: "ทั้งหมด" },
   ];
+
+  /* ── Table Configuration ──────────────────────────── */
+  const columns = React.useMemo<ColumnDef<KYCRequest>[]>(
+    () => [
+      {
+        accessorKey: "status",
+        header: "สถานะ",
+        cell: ({ row }) => {
+          const status = row.original.status;
+          return (
+            <span
+              className={`text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider ${
+                status === "pending"
+                  ? "bg-amber-50 text-amber-600 border-amber-100"
+                  : status === "approved"
+                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                    : "bg-pink-50 text-pink-500 border-pink-100"
+              }`}
+            >
+              {status === "pending"
+                ? "รอตรวจสอบ"
+                : status === "approved"
+                  ? "อนุมัติแล้ว"
+                  : status === "revise"
+                    ? "ให้ส่งใหม่"
+                    : "โดนBan"}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "creator_id",
+        header: "Creator ID",
+        cell: ({ row }) => (
+          <div className="flex flex-col">
+            <span className="text-sm font-mono text-slate-900 truncate max-w-[150px]">
+              {row.original.creator_id}
+            </span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "last_submitted_at",
+        header: "ส่งเมื่อ",
+        cell: ({ row }) => (
+          <div className="text-xs font-bold text-slate-500">
+            {row.original.last_submitted_at
+              ? new Date(row.original.last_submitted_at).toLocaleDateString(
+                  "th-TH",
+                )
+              : "-"}
+          </div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "จัดการ",
+        cell: ({ row }) => (
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedKYC(row.original);
+              }}
+              className="w-10 h-10 p-0 rounded-2xl bg-white border-slate-200 text-slate-400 hover:text-brand-purple hover:border-brand-purple/20 shadow-sm"
+            >
+              <Eye className="w-5 h-5" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: kycRequests,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -140,7 +245,7 @@ export default function KYCReviewPage() {
         </div>
       </div>
 
-      <WindflowStatsBar stats={stats} />
+      {/* <WindflowStatsBar stats={stats} /> */}
 
       {pendingRequests.length > 0 && (
         <div className="rounded-[24px] p-6 mb-8 flex items-center gap-4 border border-amber-100 bg-amber-50/50 shadow-sm">
@@ -156,124 +261,102 @@ export default function KYCReviewPage() {
       <div className="mb-8">
         <Tabs value={filterStatus} onValueChange={setFilterStatus}>
           <TabsList className="bg-white border border-slate-200 p-1 rounded-2xl h-14 shadow-sm inline-flex">
-            {["all", "pending", "approved", "rejected"].map((status) => (
-              <TabsTrigger
-                key={status}
-                value={status}
-                className="px-8 rounded-xl font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-white capitalize"
-              >
-                {status === "all"
-                  ? "ทั้งหมด"
-                  : status === "pending"
-                    ? "รอตรวจสอบ"
-                    : status === "approved"
-                      ? "อนุมัติแล้ว"
-                      : "ปฏิเสธแล้ว"}
-              </TabsTrigger>
-            ))}
+            {["all", "pending", "approved", "revise", "rejected"].map(
+              (status) => (
+                <TabsTrigger
+                  key={status}
+                  value={status}
+                  className="px-8 rounded-xl font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-white capitalize"
+                >
+                  {status === "all"
+                    ? "ทั้งหมด"
+                    : status === "pending"
+                      ? "รอตรวจสอบ"
+                      : status === "approved"
+                        ? "อนุมัติแล้ว"
+                        : status === "revise"
+                          ? "ให้ส่งใหม่"
+                          : "โดนBan"}
+                </TabsTrigger>
+              ),
+            )}
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white border border-slate-200 rounded-[32px] p-8 shadow-sm relative overflow-hidden h-[360px]"
-            >
-              <div className="absolute inset-x-0 top-0 h-1.5 bg-slate-100 opacity-50" />
-              <div className="flex justify-between mb-6">
-                <Skeleton className="h-6 w-20 rounded-xl" />
-                <Skeleton className="h-10 w-10 rounded-2xl" />
-              </div>
-              <div className="space-y-4 mb-6">
-                <div className="space-y-1">
-                  <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-5 w-48" />
-                </div>
-                <Skeleton className="h-10 w-full rounded-2xl" />
-              </div>
-              <Skeleton className="h-12 w-full rounded-[24px]" />
-            </div>
-          ))
-        ) : kycRequests.length === 0 ? (
-          <div className="col-span-full py-32 bg-white border border-dashed border-slate-200 rounded-[40px] text-center flex flex-col items-center gap-4">
-            <Shield className="w-12 h-12 text-slate-200" />
-            <div>
-              <p className="text-slate-900 font-black text-lg">
-                ยังไม่มีคำขอ KYC
-              </p>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
-                ในหมวดหมู่นี้
-              </p>
-            </div>
-          </div>
-        ) : (
-          kycRequests.map((kyc, idx) => (
-            <motion.div
-              key={kyc.id}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-white border border-slate-200 rounded-[32px] p-8 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
-            >
-              <div className="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-brand-purple to-pink-500 opacity-20" />
-
-              <div className="flex items-start justify-between mb-6">
-                <span
-                  className={`text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider ${
-                    kyc.status === "pending"
-                      ? "bg-amber-50 text-amber-600 border-amber-100"
-                      : kyc.status === "approved"
-                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                        : "bg-pink-50 text-pink-500 border-pink-100"
-                  }`}
+      <div className="bg-white rounded-[32px] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-slate-50/50">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow
+                  key={headerGroup.id}
+                  className="hover:bg-transparent border-slate-100"
                 >
-                  {kyc.status === "pending"
-                    ? "รอตรวจสอบ"
-                    : kyc.status === "approved"
-                      ? "อนุมัติแล้ว"
-                      : "ปฏิเสธแล้ว"}
-                </span>
-                <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 transition-colors group-hover:border-brand-purple/20">
-                  <User className="w-5 h-5 text-brand-purple/50 group-hover:text-brand-purple" />
-                </div>
-              </div>
-
-              <div className="space-y-1 mb-6">
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">
-                  Creator ID
-                </p>
-                <p className="text-sm font-mono text-slate-900 border-b border-dashed border-slate-100 pb-1 break-all truncate">
-                  {kyc.creator_id}
-                </p>
-              </div>
-
-              {kyc.last_submitted_at && (
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase tracking-widest mb-6 bg-slate-50 p-3 rounded-2xl">
-                  <Calendar className="w-3.5 h-3.5" />
-                  ส่งเมื่อ{" "}
-                  {new Date(kyc.last_submitted_at).toLocaleDateString("th-TH")}
-                </div>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] px-8 py-6 h-auto"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody className="divide-y divide-slate-50">
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="animate-pulse">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <TableCell key={j} className="px-8 py-6">
+                        <div className="h-4 bg-slate-100 rounded-full w-2/3" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : kycRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="px-8 py-32 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <Shield className="w-12 h-12 text-slate-200" />
+                      <div>
+                        <p className="text-slate-900 font-black text-lg">
+                          ยังไม่มีคำขอ KYC
+                        </p>
+                        <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
+                          ในหมวดหมู่นี้
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="group hover:bg-slate-50/50 transition-all cursor-pointer border-slate-50"
+                    onClick={() => setSelectedKYC(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-8 py-6">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
               )}
-
-              {kyc.comment && kyc.status === "rejected" && (
-                <div className="bg-pink-50/50 border border-pink-100 rounded-2xl p-4 mb-6 italic text-xs text-pink-600 leading-relaxed shadow-xs">
-                  "{kyc.comment}"
-                </div>
-              )}
-
-              <Button
-                onClick={() => setSelectedKYC(kyc)}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-[24px] h-12 shadow-lg shadow-slate-900/10"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                ดูรายละเอียด
-              </Button>
-            </motion.div>
-          ))
-        )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -298,14 +381,87 @@ export default function KYCReviewPage() {
             >
               <div className="absolute inset-x-0 top-0 h-2 bg-linear-to-r from-brand-purple to-pink-500" />
 
-              <div className="p-10 border-b border-slate-100 flex shrink-0 justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 mb-1">
-                    ตรวจสอบ KYC
-                  </h3>
-                  <p className="text-sm text-slate-500 font-bold">
-                    Creator ID: {selectedKYC.creator_id}
-                  </p>
+              <div className="p-10 border-b border-slate-100 flex shrink-0 justify-between items-center bg-white shadow-xs">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                    {creatorProfile?.avatar_url ||
+                    creatorProfile?.profile_image_url ? (
+                      <img
+                        src={
+                          creatorProfile.avatar_url ||
+                          creatorProfile.profile_image_url
+                        }
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-slate-300" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-2xl font-black text-slate-900">
+                        {isLoadingProfile ? (
+                          <Skeleton className="h-8 w-40" />
+                        ) : (
+                          creatorProfile?.display_name || "Clipper"
+                        )}
+                      </h3>
+                      {creatorProfile?.account_verified && (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50" />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {creatorProfile?.email && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          {creatorProfile.email}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 mt-1">
+                        {creatorProfile?.tiktok_profile_link && (
+                          <a
+                            href={creatorProfile.tiktok_profile_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-brand-purple hover:bg-brand-purple/5 transition-all border border-slate-100 shadow-sm"
+                            title="TikTok"
+                          >
+                            <Music2 className="w-4 h-4" />
+                          </a>
+                        )}
+                        {creatorProfile?.instagram_profile_link && (
+                          <a
+                            href={creatorProfile.instagram_profile_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-brand-purple hover:bg-brand-purple/5 transition-all border border-slate-100 shadow-sm"
+                            title="Instagram"
+                          >
+                            <Instagram className="w-4 h-4" />
+                          </a>
+                        )}
+                        {creatorProfile?.youtube_channel && (
+                          <a
+                            href={creatorProfile.youtube_channel}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-brand-purple hover:bg-brand-purple/5 transition-all border border-slate-100 shadow-sm"
+                            title="YouTube"
+                          >
+                            <Youtube className="w-4 h-4" />
+                          </a>
+                        )}
+                        {!creatorProfile?.tiktok_profile_link &&
+                          !creatorProfile?.instagram_profile_link &&
+                          !creatorProfile?.youtube_channel && (
+                            <span className="text-xs text-slate-300 font-bold uppercase tracking-widest italic">
+                              No social links
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={() => {
@@ -395,11 +551,11 @@ export default function KYCReviewPage() {
                   </h4>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                     <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-500">
                         สถานะปัจจุบัน
                       </p>
                       <span
-                        className={`text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-wider inline-block ${
+                        className={`text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider inline-block ${
                           selectedKYC.status === "pending"
                             ? "bg-amber-500/20 text-amber-400"
                             : selectedKYC.status === "approved"
@@ -411,11 +567,13 @@ export default function KYCReviewPage() {
                           ? "รอตรวจสอบ"
                           : selectedKYC.status === "approved"
                             ? "อนุมัติแล้ว"
-                            : "ปฏิเสธแล้ว"}
+                            : selectedKYC.status === "revise"
+                              ? "ให้ส่งใหม่"
+                              : "โดนBan"}
                       </span>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <p className="text-xs font-black uppercase tracking-widest text-slate-500">
                         ส่งคำขอล่าสุด
                       </p>
                       <p className="text-sm font-black">
@@ -428,7 +586,7 @@ export default function KYCReviewPage() {
                     </div>
                     {selectedKYC.reviewed_at && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <p className="text-xs font-black uppercase tracking-widest text-slate-500">
                           ตรวจสอบเมื่อ
                         </p>
                         <p className="text-sm font-black">
@@ -440,7 +598,7 @@ export default function KYCReviewPage() {
                     )}
                     {selectedKYC.reviewed_by && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <p className="text-xs font-black uppercase tracking-widest text-slate-500">
                           ผู้ตรวจสอบ
                         </p>
                         <p className="text-sm font-black break-all">
@@ -454,18 +612,12 @@ export default function KYCReviewPage() {
                 {selectedKYC.status === "pending" && (
                   <form
                     id="kyc-review-form"
-                    onSubmit={handleSubmit((values) =>
-                      reviewMutation.mutate({
-                        id: selectedKYC.id,
-                        status: "rejected",
-                        comment: values.comment,
-                      }),
-                    )}
+                    onSubmit={handleSubmit(() => {})}
                     className="space-y-6"
                   >
                     <div>
                       <Label className="text-sm font-black text-slate-900 mb-3 block">
-                        ระบุเหตุผลที่ปฏิเสธ (จำเป็นสำหรับสถานะปฏิเสธ)
+                        ระบุเหตุผล (จำเป็นสำหรับ "ให้ส่งใหม่" หรือ "โดนBan")
                       </Label>
                       <Textarea
                         {...register("comment")}
@@ -473,7 +625,7 @@ export default function KYCReviewPage() {
                         placeholder="เช่น ข้อมูลไม่ชัดเจน, บัตรหมดอายุ, รูปถ่ายยืนยันไม่ตรงกัน..."
                       />
                       {errors.comment && (
-                        <p className="text-pink-500 text-[10px] font-black mt-2 ml-4 uppercase tracking-wider">
+                        <p className="text-pink-500 text-xs font-black mt-2 ml-4 uppercase tracking-wider">
                           {errors.comment.message}
                         </p>
                       )}
@@ -482,9 +634,25 @@ export default function KYCReviewPage() {
                 )}
 
                 {selectedKYC.comment && selectedKYC.status !== "pending" && (
-                  <div className="bg-pink-50 border-2 border-pink-100 rounded-[32px] p-8 shadow-inner">
-                    <h4 className="text-sm font-black text-pink-700 mb-4 flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5" />
+                  <div
+                    className={`rounded-[32px] shadow-inner border-2 ${
+                      selectedKYC.status === "revise"
+                        ? "bg-indigo-50 border-indigo-100"
+                        : "bg-pink-50 border-pink-100"
+                    }`}
+                  >
+                    <h4
+                      className={`text-sm font-black mb-4 flex items-center gap-2 ${
+                        selectedKYC.status === "revise"
+                          ? "text-indigo-700"
+                          : "text-pink-700"
+                      }`}
+                    >
+                      {selectedKYC.status === "revise" ? (
+                        <RotateCcw className="w-5 h-5" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5" />
+                      )}
                       หมายเหตุจากการตรวจสอบ
                     </h4>
                     <p className="text-slate-600 font-bold leading-relaxed italic">
@@ -494,8 +662,8 @@ export default function KYCReviewPage() {
                 )}
               </div>
 
-              <div className="p-10 border-t border-slate-100 bg-slate-50/50 shrink-0">
-                {selectedKYC.status === "pending" ? (
+              <div className="border-t border-slate-100 bg-slate-50/50 shrink-0">
+                {selectedKYC.status === "pending" && (
                   <div className="flex gap-4">
                     <Button
                       variant="ghost"
@@ -508,44 +676,65 @@ export default function KYCReviewPage() {
                       ยกเลิก
                     </Button>
                     <Button
-                      type="submit"
-                      form="kyc-review-form"
+                      onClick={() => {
+                        setValue("status", "revise");
+                        handleSubmit((values) =>
+                          reviewMutation.mutate({
+                            id: selectedKYC.id,
+                            status: "revise",
+                            comment: values.comment,
+                          }),
+                        )();
+                      }}
+                      disabled={reviewMutation.isPending}
+                      className="flex-1 h-14 rounded-[28px] font-black bg-indigo-500 hover:bg-indigo-600 text-white shadow-xl shadow-indigo-500/20 active:scale-95 transition-all"
+                    >
+                      {reviewMutation.isPending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        "ให้ส่งใหม่"
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setValue("status", "rejected");
+                        handleSubmit((values) =>
+                          reviewMutation.mutate({
+                            id: selectedKYC.id,
+                            status: "rejected",
+                            comment: values.comment,
+                          }),
+                        )();
+                      }}
                       disabled={reviewMutation.isPending}
                       className="flex-1 h-14 rounded-[28px] font-black bg-pink-500 hover:bg-pink-600 text-white shadow-xl shadow-pink-500/20 active:scale-95 transition-all"
                     >
                       {reviewMutation.isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
-                        "ปฏิเสธคำขอ"
+                        "โดนBan"
                       )}
                     </Button>
                     <Button
-                      onClick={() =>
-                        reviewMutation.mutate({
-                          id: selectedKYC.id,
-                          status: "approved",
-                        })
-                      }
+                      onClick={() => {
+                        setValue("status", "approved");
+                        handleSubmit((values) =>
+                          reviewMutation.mutate({
+                            id: selectedKYC.id,
+                            status: "approved",
+                          }),
+                        )();
+                      }}
                       disabled={reviewMutation.isPending}
                       className="flex-1 h-14 rounded-[28px] font-black bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 active:scale-95 transition-all"
                     >
                       {reviewMutation.isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
-                        "อนุมัติ KYC"
+                        "อนุมัติ"
                       )}
                     </Button>
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      setSelectedKYC(null);
-                      reset();
-                    }}
-                    className="w-full h-14 rounded-[28px] font-black bg-slate-900 text-white shadow-xl shadow-slate-900/10"
-                  >
-                    ปิดหน้าต่าง
-                  </Button>
                 )}
               </div>
             </motion.div>

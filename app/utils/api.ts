@@ -79,7 +79,7 @@ const api = async ({
   const token = Cookies.get(AUTH_KEYS.ACCESS_TOKEN);
 
   const isFormData = body instanceof FormData;
-  
+
   const headers = {
     ...(!isFormData && header),
     ...(Boolean(token) && { Authorization: `Bearer ${token}` }),

@@ -1,56 +1,56 @@
 @import "tailwindcss";
 
 @theme {
-  --font-family-sarabun: var(--font-sarabun), var(--font-inter), sans-serif;
+  --font-family-sarabun:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    var(--font-sarabun), var(--font-inter), sans-serif;
 
-  --color-brand-yellow: #ffd93d;
-  --color-brand-orange: #ff8c42;
-  --color-brand-pink: #ff6b9d;
+  --color-brand-yellow: #fdbb2d;
+  --color-brand-orange: #f4762d;
+  --color-brand-pink: #d63384;
   --color-brand-purple: #8b5cf6;
-  --color-brand-blue: #4f7ec9;
+  --color-brand-blue: #0071e3;
   --color-brand-cyan: #22d3ee;
 
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-border-base: #ede8f5;
-  --color-text-base: #1a1230;
-  --color-text-muted: #6b5f8a;
-  --color-danger-base: #e11d48;
-
-  --background-image-gradient-main: linear-gradient(
+  --gradient-brand: linear-gradient(
     135deg,
-    #ffd93d,
-    #ff6b9d,
-    #8b5cf6,
-    #22d3ee
-  );
-  --background-image-gradient-cta: linear-gradient(
-    135deg,
-    #8b5cf6,
-    #4f7ec9,
-    #22d3ee
+    #fdbb2d 0%,
+    #f4762d 25%,
+    #d63384 50%,
+    #8b5cf6 75%,
+    #0071e3 100%
   );
 
-  /* Shadcn-like tokens integrated with base44 system */
+  --color-bg: #ffffff;
+  --color-surface: #f5f5f7; /* Apple surface gray */
+  --color-border-base: rgba(0, 0, 0, 0.1);
+  --color-text-base: #1d1d1f; /* Apple text color */
+  --color-text-muted: #86868b; /* Apple muted text */
+  --color-danger-base: #ff3b30;
+
+  --background-image-gradient-main: none;
+  --background-image-gradient-cta: linear-gradient(135deg, #0071e3, #5e5ce6);
+
+  /* Shadcn-like tokens integrated with Apple system */
   --color-background: var(--color-bg);
   --color-foreground: var(--color-text-base);
   --color-card: var(--color-surface);
   --color-card-foreground: var(--color-text-base);
-  --color-popover: var(--color-surface);
+  --color-popover: var(--color-bg);
   --color-popover-foreground: var(--color-text-base);
-  --color-primary: var(--color-brand-purple);
+  --color-primary: #1d1d1f;
   --color-primary-foreground: #ffffff;
-  --color-secondary: var(--color-brand-blue);
-  --color-secondary-foreground: #ffffff;
-  --color-muted: #f3f4f6;
+  --color-secondary: var(--color-surface);
+  --color-secondary-foreground: var(--color-text-base);
+  --color-muted: var(--color-surface);
   --color-muted-foreground: var(--color-text-muted);
-  --color-accent: #f3f4f6;
+  --color-accent: var(--color-surface);
   --color-accent-foreground: var(--color-text-base);
   --color-destructive: var(--color-danger-base);
   --color-destructive-foreground: #ffffff;
   --color-border: var(--color-border-base);
   --color-input: var(--color-border-base);
-  --color-ring: var(--color-brand-purple);
+  --color-ring: #0071e3;
   --radius-base: 0.75rem;
 }
 
@@ -100,58 +100,62 @@
 
 /* Custom Utilities */
 @layer utilities {
-  .gradient-noise {
-    position: relative;
+  .text-gradient-brand {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  .gradient-noise::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
-    pointer-events: none;
-    border-radius: inherit;
+  .glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
 
   .btn-cta {
-    background-image: var(--background-image-gradient-cta);
+    background-color: #0071e3;
     color: #ffffff;
-    font-weight: 700;
-    border-radius: 50px;
+    font-weight: 500;
+    font-size: 17px;
+    padding: 12px 24px;
+    border-radius: 980px;
     border: none;
     cursor: pointer;
-    transition:
-      opacity 0.2s,
-      transform 0.1s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    letter-spacing: -0.022em;
   }
   .btn-cta:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
+    background-color: #0077ed;
+    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+  }
+  .btn-cta:active {
+    transform: scale(0.98);
   }
   .btn-cta:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     transform: none;
   }
 
   .btn-secondary {
-    background-color: #ffffff;
-    border: 1.5px solid var(--color-brand-purple);
-    color: var(--color-brand-purple);
-    font-weight: 600;
-    border-radius: 50px;
-    min-height: 44px;
-    padding: 0 1.5rem;
+    background-color: transparent;
+    border: none;
+    color: #0066cc;
+    font-weight: 400;
+    font-size: 17px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: color 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    letter-spacing: -0.022em;
   }
   .btn-secondary:hover {
-    background-color: #f5f0ff;
+    text-decoration: underline;
   }
 }
 

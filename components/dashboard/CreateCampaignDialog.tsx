@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import api from "@/app/utils/api";
+import { INDUSTRIES } from "@/constants/industries";
 
 interface CreateCampaignDialogProps {
   open: boolean;
@@ -30,18 +31,6 @@ interface CreateCampaignDialogProps {
 }
 
 const PLATFORMS = ["TikTok", "Instagram", "YouTube", "All"];
-const CATEGORIES = [
-  "Food & Beverage",
-  "Gaming",
-  "Technology",
-  "Beauty",
-  "Education",
-  "Fashion",
-  "Travel",
-  "Entertainment",
-  "Finance",
-  "Health",
-];
 
 type Step = "info" | "target" | "budget";
 
@@ -256,7 +245,7 @@ export default function CreateCampaignDialog({
                             <SelectValue placeholder="เลือกหมวด" />
                           </SelectTrigger>
                           <SelectContent className="bg-[#1a2235] border-white/10">
-                            {CATEGORIES.map((c) => (
+                            {INDUSTRIES.map((c) => (
                               <SelectItem key={c} value={c}>
                                 {c}
                               </SelectItem>

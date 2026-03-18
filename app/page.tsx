@@ -8,6 +8,7 @@ import WindflowBookForm from "@/components/landing/WindflowBookForm";
 import WindflowFooter from "@/components/landing/WindflowFooter";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const HomePage = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -27,79 +28,86 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#1a1230]">
-      <nav
+    <div className="min-h-screen bg-white text-[#1d1d1f] font-sans">
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
           scrolled
-            ? "bg-white/30 backdrop-blur-2xl backdrop-saturate-180 border-b border-white/20 py-3 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
-            : "bg-transparent backdrop-blur-none backdrop-saturate-100 border-b border-transparent py-3 shadow-none"
+            ? "bg-white/70 backdrop-blur-xl border-b border-slate-100 py-4 shadow-[0_2px_20px_rgba(0,0,0,0.02)]"
+            : "bg-transparent border-b border-transparent py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Wind
-              className={`w-6 h-6 transition-colors duration-300 ${scrolled ? "text-[#8B5CF6]" : "text-white"}`}
-            />
+          <motion.div
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <div
+              className={`p-1.5 rounded-xl transition-all duration-500 ${scrolled ? "bg-[#1d1d1f]" : "bg-white border border-slate-100 shadow-sm"}`}
+            >
+              <Wind
+                className={`w-5 h-5 transition-colors duration-500 ${scrolled ? "text-white" : "text-[#1d1d1f]"}`}
+              />
+            </div>
             <span
-              className={`font-black text-xl tracking-tight transition-all duration-300 ${
-                !scrolled ? "text-white" : ""
-              }`}
-              style={
-                scrolled
-                  ? {
-                      background: "linear-gradient(135deg,#8B5CF6,#22D3EE)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }
-                  : {}
-              }
+              className={`font-bold text-xl tracking-tight transition-all duration-500 text-gradient-brand`}
             >
               Windflu
             </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/brand/login"
-              className={`text-sm transition-colors duration-300 hidden sm:block font-medium ${
-                scrolled
-                  ? "text-[#6b5f8a] hover:text-[#1a1230]"
-                  : "text-white/80 hover:text-white"
-              }`}
-            >
-              สำหรับแบรนด์
-            </Link>
-            <Link href={"/login"}>
-              <button
-                className={`text-sm px-4 py-2.5 rounded-full font-bold transition-all duration-300 border ${
-                  scrolled
-                    ? "border-[#ede8f5] text-[#6b5f8a] hover:border-[#8B5CF6] hover:text-[#8B5CF6]"
-                    : "border-white/40 text-white hover:bg-white/10"
+          </motion.div>
+
+          <div className="flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
+              <Link
+                href="/brand/login"
+                className={`text-sm font-semibold transition-colors duration-500 hover:text-blue-600 ${
+                  scrolled ? "text-[#1d1d1f]/70" : "text-[#1d1d1f]/70"
                 }`}
               >
-                เข้าสู่ระบบ
-              </button>
-            </Link>
-            <Link href={"/register"}>
-              <button
-                className={`text-sm px-5 py-2.5 rounded-full font-bold transition-all duration-300 ${
-                  scrolled
-                    ? "btn-cta"
-                    : "bg-white text-[#8B5CF6] hover:bg-white/90 shadow-lg shadow-black/10"
-                }`}
-              >
-                สมัครเป็น Clipper
-              </button>
-            </Link>
+                สำหรับแบรนด์
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link href={"/login"}>
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  className={`text-sm font-bold transition-all duration-500 ${
+                    scrolled
+                      ? "text-[#1d1d1f]/70 hover:text-[#1d1d1f]"
+                      : "text-[#1d1d1f]/70 hover:text-[#1d1d1f]"
+                  }`}
+                >
+                  เข้าสู่ระบบ
+                </motion.button>
+              </Link>
+              <Link href={"/register"}>
+                <motion.button
+                  whileHover={{ y: -2, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`text-sm px-6 py-2.5 rounded-full font-bold transition-all duration-500 shadow-sm ${
+                    scrolled
+                      ? "bg-[#1d1d1f] text-white hover:bg-black"
+                      : "bg-[#1d1d1f] text-white hover:bg-black"
+                  }`}
+                >
+                  สมัครเป็น Clipper
+                </motion.button>
+              </Link>
+            </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       <WindflowHero
         onBookCall={scrollToBooking}
         onGetStarted={() => (window.location.href = "register")}
       />
-      {/* <WindflowLogos /> */}
-      {/* <WindflowCaseStudies /> */}
+      <WindflowLogos />
+      <WindflowHowItWorks />
+      <WindflowCaseStudies />
       <WindflowBookForm />
 
       <WindflowFooter />

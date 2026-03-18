@@ -7,14 +7,11 @@ import {
   Loader2,
   Lock,
   Mail,
-  Sparkles,
-  TrendingUp,
-  Users,
   ShieldCheck,
+  ChevronRight,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/Input";
-
 import Link from "next/link";
 import api from "@/app/utils/api";
 import { useAuthStore } from "@/lib/store/auth-store";
@@ -27,21 +24,37 @@ interface LoginResponse {
   user_id: string;
 }
 
-const STATS = [
-  { icon: Users, label: "Clipper ที่ใช้งาน", value: "2,400+" },
-  { icon: TrendingUp, label: "แคมเปญที่ผ่านมา", value: "180+" },
-  { icon: Sparkles, label: "รายจ่ายสะสม", value: "฿4.2M+" },
-];
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      const data = await api({
+        url: "/v1/auth/google/url",
+        method: "GET",
+      });
+      if (data && data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("ไม่พบ URL สำหรับเข้าสู่ระบบ");
+      }
+    } catch (err: any) {
+      setError("ไม่สามารถเชื่อมต่อกับ Google ได้ กรุณาลองอีกครั้ง");
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) return;
     setError(null);
     setLoading(true);
     try {
@@ -51,11 +64,10 @@ export default function LoginPage() {
         body: { email, password },
       });
 
-      // Store tokens in httpOnly cookies via server-side route
       const cookieRes = await fetch("/api/auth/set-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data), // forward the entire response so the route can pick any field name
+        body: JSON.stringify(data),
       });
 
       if (!cookieRes.ok) {
@@ -63,14 +75,12 @@ export default function LoginPage() {
         throw new Error(errBody.error || "ไม่สามารถบันทึก session ได้");
       }
 
-      // Update global store
       useAuthStore.getState().setAuth({
         id: data.user_id,
         email: email,
         role: data.role as any,
-      });
+      } as any);
 
-      // Hard redirect so middleware reads the freshly-set cookie
       window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
@@ -80,128 +90,169 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* ——— Left panel (hidden on mobile) ——— */}
-      <div className="hidden lg:flex w-5/12 bg-gradient-to-br from-blue-600 via-purple-600 to-cyan-500 p-12 flex-col justify-between relative overflow-hidden">
-        {/* Decorative rings */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-[-5%] left-[-10%] w-72 h-72 border border-white rounded-full" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 border border-white rounded-full" />
-          <div className="absolute top-1/2 left-1/4 w-32 h-32 border border-white rounded-full" />
-        </div>
-
-        {/* Top: Logo */}
-        <div className="relative z-10">
-          <Link href="/" className="flex items-center gap-2 mb-20">
-            <Wind className="w-8 h-8 text-white" />
-            <span className="text-2xl font-bold text-white">Windflu</span>
-          </Link>
-          <h1 className="text-4xl font-black text-white mb-4 leading-snug">
-            ยินดีต้อนรับ
-            <br />
-            กลับมา
-          </h1>
-          <p className="text-white/70 text-lg max-w-sm">
-            เข้าสู่ระบบเพื่อเช็คแคมเปญ ติดตามรายได้ และเริ่มทำคลิปได้เลย
-          </p>
-        </div>
-
-        {/* Bottom: Stats */}
-        <div className="relative z-10 space-y-5">
-          {STATS.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-white font-bold text-base">{value}</div>
-                <div className="text-white/60 text-xs">{label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#000000]">
+      {/* Background Ambience (Apple macOS style abstract blur) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.05, 1],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full mix-blend-screen opacity-20 filter blur-[100px]"
+          style={{
+            background: "radial-gradient(circle, #8B5CF6 0%, transparent 70%)",
+          }}
+        />
+        <motion.div
+          animate={{
+            rotate: [0, -15, 15, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full mix-blend-screen opacity-20 filter blur-[100px]"
+          style={{
+            background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)",
+          }}
+        />
       </div>
 
-      {/* ——— Right panel ——— */}
-      <div className="flex-1 bg-[#0a0e1a] flex items-center justify-center p-6 sm:p-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile logo */}
-          <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
-            <Wind className="w-6 h-6" style={{ color: "#8B5CF6" }} />
-            <span className="text-xl font-bold text-white">Windflu</span>
-          </Link>
-
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-            เข้าสู่ระบบ
-          </h2>
-          <p className="text-slate-400 text-sm mb-8">
-            ยังไม่มีบัญชี?{" "}
-            <Link
-              href="/onboarding"
-              className="text-purple-400 font-bold hover:underline"
-            >
-              สมัครเป็น Clipper ฟรี
-            </Link>
+      {/* Main Login Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-[420px] mx-auto p-8 sm:p-10 rounded-[32px] bg-[#1d1d1f]/60 backdrop-blur-3xl border border-white/10 shadow-2xl"
+      >
+        {/* Header */}
+        <div className="flex flex-col items-center mb-10 text-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="w-16 h-16 rounded-[20px] bg-linear-to-tr from-purple-600 to-cyan-500 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20"
+          >
+            <Wind className="w-8 h-8 text-white" />
+          </motion.div>
+          <h1 className="text-2xl font-semibold text-white tracking-tight mb-2">
+            เข้าสู่ระบบบัญชีของคุณ
+          </h1>
+          <p className="text-sm text-[#86868b]">
+            จัดการแคมเปญและติดตามรายได้บน Windflu
           </p>
+        </div>
 
-          {error && (
-            <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              {error}
-            </div>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3"
+          >
+            <ShieldCheck className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-200 leading-relaxed">{error}</p>
+          </motion.div>
+        )}
+
+        {/* Primary CTA: Google Login */}
+        <button
+          onClick={handleGoogleLogin}
+          disabled={googleLoading || loading}
+          className="w-full h-14 rounded-full bg-white hover:bg-gray-100 text-black font-medium text-[15px] flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+        >
+          {googleLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+          ) : (
+            <>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.78 15.72 17.56V20.32H19.29C21.37 18.4 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
+                <path d="M12 23C14.97 23 17.46 22.02 19.29 20.32L15.72 17.56C14.73 18.23 13.48 18.63 12 18.63C9.13 18.63 6.7 16.69 5.8 14.07H2.12V16.92C3.93 20.53 7.68 23 12 23Z" fill="#34A853"/>
+                <path d="M5.8 14.07C5.57 13.38 5.44 12.65 5.44 11.9C5.44 11.15 5.57 10.42 5.8 9.73V6.88H2.12C1.37 8.36 0.95 10.08 0.95 11.9C0.95 13.72 1.37 15.44 2.12 16.92L5.8 14.07Z" fill="#FBBC05"/>
+                <path d="M12 5.17C13.62 5.17 15.06 5.73 16.2 6.82L19.36 3.66C17.46 1.89 14.97 0.8 12 0.8C7.68 0.8 3.93 3.27 2.12 6.88L5.8 9.73C6.7 7.11 9.13 5.17 12 5.17Z" fill="#EA4335"/>
+              </svg>
+              ดำเนินการต่อด้วย Google
+            </>
           )}
+        </button>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email */}
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              <Input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="อีเมล"
-                className="bg-[#111827] border-[#1e293b] text-white h-14 rounded-xl pl-11 placeholder:text-slate-600 focus:bg-[#111827] focus:border-purple-500 transition-colors"
-              />
+        {/* Divider */}
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-white/10"></div>
+          <span className="text-xs text-[#86868b] uppercase tracking-wider font-medium">
+            หรือ
+          </span>
+          <div className="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        {/* Toggle Email Login */}
+        {!showEmailLogin ? (
+          <button
+            onClick={() => setShowEmailLogin(true)}
+            className="w-full flex items-center justify-center gap-2 text-[15px] font-medium text-white/70 hover:text-white transition-colors py-2"
+          >
+            <Mail className="w-4 h-4" />
+            ดำเนินการต่อด้วยอีเมล
+          </button>
+        ) : (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            onSubmit={handleEmailLogin}
+            className="space-y-4"
+          >
+            <div className="space-y-1.5">
+              <div className="relative">
+                <Input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="อีเมล"
+                  className="bg-[#2c2c2e]/50 border-transparent text-white h-14 rounded-2xl pl-4 placeholder:text-[#86868b] focus:bg-[#323234]/80 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                />
+              </div>
             </div>
 
-            {/* Password */}
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              <Input
-                required
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="รหัสผ่าน"
-                className="bg-[#111827] border-[#1e293b] text-white h-14 rounded-xl pl-11 placeholder:text-slate-600 focus:bg-[#111827] focus:border-purple-500 transition-colors"
-              />
+            <div className="space-y-1.5">
+              <div className="relative">
+                <Input
+                  required
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="รหัสผ่าน"
+                  className="bg-[#2c2c2e]/50 border-transparent text-white h-14 rounded-2xl pl-4 placeholder:text-[#86868b] focus:bg-[#323234]/80 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                />
+              </div>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full h-14 rounded-2xl text-base font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-60 mt-2"
-              style={{ background: "linear-gradient(135deg,#8B5CF6,#22D3EE)" }}
+              disabled={loading || !email || !password}
+              className="w-full h-14 mt-6 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/5 text-white font-medium text-[15px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                "เข้าสู่ระบบ"
+                <>
+                  เข้าสู่ระบบ
+                  <ChevronRight className="w-4 h-4 opacity-70" />
+                </>
               )}
             </button>
-          </form>
+          </motion.form>
+        )}
 
-          <p className="text-center text-xs text-slate-600 mt-8">
-            © 2025 Windflu. สงวนสิทธิ์ทุกประการ
-          </p>
-        </motion.div>
-      </div>
+        {/* Footer Links */}
+        <div className="mt-10 text-center text-[13px] text-[#86868b]">
+          ยังไม่มีบัญชีใช่ไหม?{" "}
+          <Link
+            href="/register"
+            className="text-white hover:text-purple-400 transition-colors font-medium border-b border-white hover:border-purple-400 pb-px"
+          >
+            สมัครสมาชิก
+          </Link>
+        </div>
+      </motion.div>
     </div>
   );
 }

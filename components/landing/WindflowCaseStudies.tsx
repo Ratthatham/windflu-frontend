@@ -34,49 +34,72 @@ const cases = [
 
 const WindflowCaseStudies = () => {
   return (
-    <section className="py-20 px-6 bg-white">
+    <section className="py-32 px-6 bg-white overflow-hidden border-t border-slate-50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-black mb-3 text-[#1a1230]">
-            ผลลัพธ์จริงจากแคมเปญ
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-[#1d1d1f] tracking-tight">
+            ผลลัพธ์จริงที่แบรนด์ได้รับ
           </h2>
-          <p className="text-[#6b5f8a]">ตัวเลขจริง วัดได้ โปร่งใส</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <p className="text-lg text-[#86868b] font-medium tracking-tight">ทุกแคมเปญถูกวัดผลด้วยตัวเลขจริงที่โปร่งใส</p>
+        </motion.div>
+        <motion.div
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.2,
+              },
+            },
+          }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        >
           {cases.map((c, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-white border border-[#ede8f5] rounded-2xl overflow-hidden hover:shadow-lg transition-all"
-              style={{ boxShadow: "0 4px 24px rgba(139,92,246,0.08)" }}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+                },
+              }}
+              whileHover={{
+                y: -12,
+              }}
+              className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_100px_rgba(0,0,0,0.06)] transition-all duration-500"
             >
-              <div className="relative">
-                <img
+              <div className="relative overflow-hidden group h-56">
+                <motion.img
+                  transition={{ duration: 0.6 }}
                   src={c.img}
                   alt={c.brand}
-                  className="w-full h-40 object-cover"
-                />
-                <div
-                  className="absolute inset-x-0 top-0 h-1 rounded-t-2xl"
-                  style={{
-                    background: "linear-gradient(135deg,#FF6B9D,#8B5CF6)",
-                  }}
+                  className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                 />
               </div>
-              <div className="p-5">
-                <span
-                  className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: "#8B5CF6" }}
-                >
-                  {c.type}
-                </span>
-                <h3 className="text-base font-bold text-[#1a1230] mt-1 mb-4">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-bold uppercase tracking-widest text-gradient-brand px-3 py-1 bg-slate-50/80 rounded-full border border-slate-100">
+                    {c.type}
+                  </span>
+                  <div className="text-xs font-semibold text-[#86868b] uppercase tracking-wider">
+                    Case Study
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-[#1d1d1f] mb-8 tracking-tight">
                   {c.brand}
                 </h3>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-50">
                   {[
                     { icon: Eye, val: c.views, label: "ยอดวิว" },
                     { icon: Film, val: c.clips, label: "คลิป" },
@@ -84,16 +107,12 @@ const WindflowCaseStudies = () => {
                   ].map((m, j) => (
                     <div
                       key={j}
-                      className="text-center bg-[#fafafa] rounded-xl p-2 border border-[#ede8f5]"
+                      className="text-center group/stat"
                     >
-                      <m.icon
-                        className="w-3.5 h-3.5 mx-auto mb-1"
-                        style={{ color: "#8B5CF6" }}
-                      />
-                      <div className="text-sm font-bold text-[#1a1230]">
+                      <div className="text-xl font-bold text-[#1d1d1f] mb-1 tracking-tight group-hover/stat:text-brand-pink transition-colors duration-300">
                         {m.val}
                       </div>
-                      <div className="text-[10px] text-[#6b5f8a]">
+                      <div className="text-xs font-medium text-[#86868b] tracking-tight">
                         {m.label}
                       </div>
                     </div>
@@ -102,7 +121,7 @@ const WindflowCaseStudies = () => {
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

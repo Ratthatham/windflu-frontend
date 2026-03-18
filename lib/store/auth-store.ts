@@ -1,16 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export interface User {
-  id: string;
-  email: string;
-  role: "creator" | "brand" | "admin";
-  full_name?: string;
-  display_name?: string; // For Creator
-  company_name?: string; // For Brand
-  contact_name?: string; // For Brand
-  avatar_url?: string;
-}
+import { UnifiedProfile } from "@/type/profile";
+
+export interface User extends UnifiedProfile {}
 
 interface AuthState {
   user: User | null;

@@ -112,7 +112,7 @@ export default function BookCallForm() {
                       key={i}
                       className="w-8 h-8 rounded-full bg-[#c8f135] flex items-center justify-center border-2 border-[#141414]"
                     >
-                      <span className="text-[10px] font-black text-[#0a0a0a]">
+                      <span className="text-xs font-black text-[#0a0a0a]">
                         {l}
                       </span>
                     </div>

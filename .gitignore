@@ -3,3 +3,5 @@ node_modules
 .next
 .agent/
 .env.local
+.agents
+skills-lock.json

@@ -2,10 +2,7 @@
 import { Toaster as Sonner } from "sonner";
 
 const Toaster = ({ ...props }: React.ComponentProps<typeof Sonner>) => {
-  // Use dark theme by default to match the app
-  const theme = document.documentElement.classList.contains("dark")
-    ? "dark"
-    : "light";
+  const theme = "light";
 
   return (
     <Sonner

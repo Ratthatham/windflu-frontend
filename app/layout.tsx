@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import { ToastProvider, ToastViewport } from "@/components/ui/Toast";
+import { Toaster as SonnerToaster } from "@/components/ui/Sonner";
 import Script from "next/script";
 
 const inter = Inter({
@@ -37,6 +38,7 @@ export default function RootLayout({
           <ToastProvider>
             {children}
             <ToastViewport />
+            <SonnerToaster position="top-right" richColors />
           </ToastProvider>
         </QueryProvider>
         <Script src="https://cdn.omise.co/omise.js" strategy="beforeInteractive" />

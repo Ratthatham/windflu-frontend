@@ -22,7 +22,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (accessToken && userId && userRole) {
         try {
-          // Fetch detailed profile
+          
           let profileData = null;
           if (userRole === "creator") {
             profileData = await api({ url: "/v1/creators/profile" });
@@ -34,11 +34,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             id: userId,
             email: profileData?.email || "",
             role: userRole as "creator" | "brand" | "admin",
-            display_name: profileData?.display_name,
-            company_name: profileData?.company_name,
-            contact_name: profileData?.contact_name,
-            full_name: profileData?.display_name || profileData?.company_name || profileData?.contact_name,
-            avatar_url: profileData?.avatar_url,
+            name: userRole === "creator" ? profileData?.display_name : profileData?.company_name,
+            avatarUrl: userRole === "creator" ? (profileData?.profile_image_url || profileData?.avatar_url) : "",
+            phone: profileData?.phone || "",
+            displayName: userRole === "creator" ? profileData?.display_name : profileData?.company_name,
+            fullName: userRole === "creator" 
+              ? (profileData?.display_name || `${profileData?.first_name} ${profileData?.last_name}`)
+              : profileData?.contact_name,
+            location: profileData?.location,
+            createdAt: profileData?.created_at || "",
+            bio: userRole === "creator" ? profileData?.bio : profileData?.company_description,
+            companyName: profileData?.company_name,
+            contactName: profileData?.contact_name,
           };
 
           setAuth(user);
@@ -49,6 +56,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
             id: userId,
             email: "",
             role: userRole as "creator" | "brand" | "admin",
+            name: "User",
+            avatarUrl: "",
+            phone: "",
+            displayName: "User",
+            fullName: "User",
+            createdAt: "",
           };
           setAuth(user);
         }

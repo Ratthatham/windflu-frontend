@@ -38,49 +38,76 @@ const steps = [
 
 const WindflowHowItWorks = () => {
   return (
-    <section className="px-6 py-10">
+    <section className="py-32 px-6 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-black mb-3 text-white">
-            ขั้นตอนการทำงาน
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-24"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#1d1d1f] tracking-tight">
+            ขั้นตอนการทำงานที่โปร่งใส
           </h2>
-          <p className="text-white/80">
-            ระบบรีวิว Draft ก่อนโพสต์ ป้องกันปัญหา ทุกคลิปผ่านการตรวจสอบ
+          <p className="text-lg text-[#86868b] max-w-2xl mx-auto font-medium tracking-tight">
+            เรามีระบบรีวิว Draft ก่อนโพสต์ เพื่อให้มั่นใจว่าทุกผลงานมีคุณภาพและตรงตามความต้องการ
           </p>
-        </div>
+        </motion.div>
 
         <div className="relative">
-          <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {/* Subtle connector line */}
+          <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-px bg-slate-100" />
+          
+          <motion.div
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.12,
+                },
+              },
+            }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-5 gap-12 relative z-10"
+          >
             {steps.map((step, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+                  },
+                }}
+                className="relative group text-center"
               >
-                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-4 relative">
-                  <step.icon className="w-7 h-7" style={{ color: "white" }} />
-                  <div
-                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full text-white text-xs font-black flex items-center justify-center border-2 border-white/20"
-                    style={{
-                      background: "linear-gradient(135deg,#8B5CF6,#22D3EE)",
-                    }}
-                  >
+                <motion.div
+                  whileHover={{ y: -8, scale: 1.05 }}
+                  className="w-24 h-24 rounded-[28px] bg-slate-50 flex items-center justify-center mx-auto mb-8 shadow-[0_8px_30px_rgba(0,0,0,0.02)] border border-slate-100 transition-all duration-500 group-hover:shadow-[0_20px_40px_rgba(214,51,132,0.1)] group-hover:border-transparent group-hover:bg-white relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-(--gradient-brand) opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+                  <step.icon className="w-10 h-10 text-[#1d1d1f] group-hover:text-brand-pink transition-colors duration-500" strokeWidth={1.5} />
+                  
+                  <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full text-white text-sm font-bold flex items-center justify-center shadow-md bg-(--gradient-brand) border-2 border-white">
                     {i + 1}
                   </div>
-                </div>
-                <h3 className="text-sm font-bold text-white mb-2">
+                </motion.div>
+
+                <h3 className="text-lg font-bold text-[#1d1d1f] mb-3 tracking-tight">
                   {step.title}
                 </h3>
-                <p className="text-xs text-white/70 leading-relaxed">
+                <p className="text-sm text-[#86868b] leading-relaxed font-medium">
                   {step.desc}
                 </p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -12,6 +12,8 @@ import {
   Plus,
   Shield,
   CheckCircle2,
+  DollarSign,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +27,8 @@ const roleNavigation: Record<
     { name: "ภาพรวม", href: "/creator/dashboard", icon: LayoutDashboard },
     { name: "แคมเปญ", href: "/creator/campaigns", icon: BarChart3 },
     { name: "งานของฉัน", href: "/creator/my-work", icon: Package },
+    { name: "โปรไฟล์", href: "/creator/profile", icon: User },
+    { name: "ยืนยันตัวตน", href: "/creator/kyc", icon: Shield },
   ],
   brand: [
     { name: "ภาพรวม", href: "/brand/dashboard", icon: LayoutDashboard },
@@ -37,6 +41,7 @@ const roleNavigation: Record<
     { name: "แผงผู้ดูแล", href: "/admin", icon: Shield },
     { name: "แคมเปญ", href: "/admin/campaigns", icon: BarChart3 },
     { name: "ตรวจ KYC", href: "/admin/kyc", icon: CheckCircle2 },
+    { name: "Payouts", href: "/admin/payouts", icon: DollarSign },
   ],
 };
 
@@ -102,20 +107,24 @@ export default function Sidebar({ className }: { className?: string }) {
       <div className="border-t border-slate-100 mt-auto pt-6">
         {user && (
           <div className="flex items-center gap-3 mb-4 px-1">
-            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-              <span className="text-sm font-black text-slate-900">
-                {(user.full_name || user.email || "U")[0].toUpperCase()}
-              </span>
+            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+              {user.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-black text-slate-900">
+                  {(user.fullName || user.email || "U")[0].toUpperCase()}
+                </span>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-black text-slate-900 truncate">
-                {user.full_name ||
-                  user.display_name ||
-                  user.company_name ||
-                  user.email ||
-                  "Anonymous"}
+                {user.fullName || user.displayName || user.email || "Anonymous"}
               </p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate">
                 {user.role === "admin"
                   ? "แอดมิน"
                   : user.role === "brand"
@@ -130,7 +139,7 @@ export default function Sidebar({ className }: { className?: string }) {
           className="w-full flex items-center justify-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 py-3 rounded-2xl transition-all border border-slate-200 active:scale-95 px-4"
         >
           <LogOut className="w-4 h-4" />
-          <span>ออกก่อนนะ</span>
+          <span>ออกจากระบบ</span>
         </button>
       </div>
     </aside>

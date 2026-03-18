@@ -31,7 +31,7 @@ const WindflowStatsBar = ({ stats }: WindflowStatsBarProps) => {
               <div className="text-xl font-black text-slate-900 leading-none">
                 {stat.value}
               </div>
-              <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">
+              <div className="text-xs text-slate-500 font-black uppercase tracking-widest mt-1">
                 {stat.label}
               </div>
             </div>

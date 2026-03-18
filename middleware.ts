@@ -25,9 +25,11 @@ export function middleware(request: NextRequest) {
   // 0. Redirect /dashboard to role-specific dashboard
   if (isAuthenticated && pathname === "/dashboard") {
     if (role === "admin")
-      return NextResponse.redirect(new URL("/admin/manage", request.url));
+      return NextResponse.redirect(new URL("/admin", request.url));
     if (role === "brand")
-      return NextResponse.redirect(new URL("/brand/create-campaign", request.url));
+      return NextResponse.redirect(
+        new URL("/brand/create-campaign", request.url),
+      );
     return NextResponse.redirect(new URL("/creator/campaigns", request.url));
   }
 
